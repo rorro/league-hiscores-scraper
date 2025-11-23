@@ -69,7 +69,7 @@ async def find_last_99s(session: ClientSession) -> t.List[HiscorePlayer]:
         if last_player:
             last_players.append(last_player)
             LOGGER.info(
-                f"Found last ranked player, {last_player.name}, for {skill.name} on rank {last_player.rank}.")
+                f"Found last ranked 99, {last_player.name}, for {skill.name} on rank {last_player.rank}.")
 
     # Write last ranks to file for use at next scrape
     data = json.dumps(last_ranks, indent=4)
@@ -91,7 +91,7 @@ async def main() -> None:
     LOGGER.info("Last 99 Finder complete")
 
     if last_players:
-        await submit_updates(last_players)
+        await submit_updates(last_players, "Last 99")
     LOGGER.info("*" * 64)
 
 

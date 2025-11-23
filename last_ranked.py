@@ -117,7 +117,7 @@ async def main() -> None:
 
     LOGGER.info("Last rank finder complete")
 
-    await submit_updates(last_players)
+    await submit_updates(last_players, "Last Ranked")
     LOGGER.info("*" * 64)
 
 

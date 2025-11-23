@@ -49,7 +49,7 @@ BROWSER_USER_AGENT: t.Final[str] = "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Ge
 WOM_API_KEY: t.Final[t.Optional[str]] = None
 """The optional API Key for WOM."""
 
-LEADER_GROUP_NAME: t.Final[str] = f"League Leaders {secrets.token_hex(4)}"
+LEADER_GROUP_NAME: t.Final[str] = f"League Leaders"
 """The name for the temporary group on WOM.
 
 Use secrets.token_hex to ensure the group name is not taken already.
@@ -185,11 +185,11 @@ class Group:
         return f"WOM Group {self.name} (id: {self.id}) with {self.count} members"
 
     @classmethod
-    async def create(cls, client: wom.Client, members: t.List[HiscorePlayer]) -> "Group":
+    async def create(cls, client: wom.Client, members: t.List[HiscorePlayer], group_name: str) -> "Group":
         """Creates the group on WOM."""
         LOGGER.info("Creating group")
         result = await client.groups.create_group(
-            LEADER_GROUP_NAME, *(wom.GroupMemberFragment(m.name) for m in members)
+            f"{group_name} {secrets.token_hex(4)}", *(wom.GroupMemberFragment(m.name) for m in members)
         )
 
         if result.is_err:
@@ -467,7 +467,7 @@ async def fetch_all_leaders(session: ClientSession) -> t.List[HiscorePlayer]:
     return metric_leaders
 
 
-async def submit_updates(leaders: t.List[HiscorePlayer]) -> None:
+async def submit_updates(leaders: t.List[HiscorePlayer], group_name: str) -> None:
     client = wom.Client(user_agent=WOM_USER_AGENT)
     await client.start()
 
@@ -479,7 +479,7 @@ async def submit_updates(leaders: t.List[HiscorePlayer]) -> None:
 
     try:
         # Create the group
-        group = await Group.create(client, leaders)
+        group = await Group.create(client, leaders, group_name)
         await asyncio.sleep(1)
 
         # Update the group members
@@ -503,7 +503,7 @@ async def main() -> None:
     await session.close()
     LOGGER.info("Scrape complete")
 
-    await submit_updates(leaders)
+    await submit_updates(leaders, f"Top {PLAYERS_PER_PAGE}")
     LOGGER.info("*" * 64)
 
 
